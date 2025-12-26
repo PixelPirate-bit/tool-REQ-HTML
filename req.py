@@ -5,7 +5,14 @@ from colorama import Fore, Style
 import json
 import argparse
 import time
-
+from requests.exceptions import (
+    MissingSchema,
+    InvalidSchema,
+    InvalidURL,
+    ConnectionError,
+    Timeout,
+    RequestException
+)
 parser = argparse.ArgumentParser(
     description="REQ-HTML - Simple HTTP Analyzer"
 )
@@ -46,8 +53,9 @@ except:
     delay = 1
 # Banner
 
-
 url = args.url
+if not url.startswith(("http://", "https://")):
+    url = "http://" + url
 
 # Fingerprint function
 def detectar_fingerprint(headers):
@@ -138,18 +146,40 @@ if args.method.lower() in ["post", "put"]:
                 payload = {}
 
 # Requests
-if args.method.lower() == "get":
+try:
     time.sleep(delay)
-    response = requests.get(url, headers=ninja, timeout=4)
-elif args.method.lower() == "post":
-    time.sleep(delay)
-    response = requests.post(url, json=payload, headers=ninja, timeout=4)
-elif args.method.lower() == "put":
-    time.sleep(delay)
-    response = requests.put(url, json=payload, headers=ninja, timeout=4)
-elif args.method.lower() == "delete":
-    time.sleep(delay)
-    response = requests.delete(url, headers=ninja, timeout=4)
+
+    if args.method.lower() == "get":
+        response = requests.get(url, headers=ninja, timeout=4)
+
+    elif args.method.lower() == "post":
+        response = requests.post(url, json=payload, headers=ninja, timeout=4)
+
+    elif args.method.lower() == "put":
+        response = requests.put(url, json=payload, headers=ninja, timeout=4)
+
+    elif args.method.lower() == "delete":
+        response = requests.delete(url, headers=ninja, timeout=4)
+
+except MissingSchema:
+    print("[ERROR] Invalid URL format. Please include http:// or https://")
+    exit(1)
+
+except InvalidURL:
+    print("[ERROR] Malformed URL. Check the target address.")
+    exit(1)
+
+except ConnectionError:
+    print("[ERROR] Connection failed. Host unreachable or offline.")
+    exit(1)
+
+except Timeout:
+    print("[ERROR] Request timeout. The server did not respond in time.")
+    exit(1)
+
+except RequestException as e:
+    print(f"[ERROR] Unexpected request error: {e}")
+    exit(1)
 
 print(f"\n-------HTTP METHOD: {args.method.upper()}-------")
 print(f"Status: {response.status_code}")
@@ -169,16 +199,19 @@ if args.cookies:
 if args.status:
     time.sleep(delay)
     print("\n---------STATUS---------")
-    if response.status_code == 200:
-        print("[+] Active site/API - 200")
-    elif response.status_code == 404:
-        print("[!] Site/API Not Found - 404")
-    elif response.status_code == 429:
-        print("[-] Too Many Requests - 429")
-    elif response.status_code == 403:
-        print("[$] Site Blocked - 403")
-    else:
-        print("Unknown status error!!")
+    try:
+        if response.status_code == 200:
+            print("[+] Active site/API - 200")
+        elif response.status_code == 404:
+            print("[!] Site/API Not Found - 404")
+        elif response.status_code == 429:
+            print("[-] Too Many Requests - 429")
+        elif response.status_code == 403:
+            print("[$] Site Blocked - 403")
+        else:
+            print("Unknown status error!!")
+    except Exception as e:
+        print(f"Error checking status: {e}")
     print(f"[-] Time to receive response: {response.elapsed.total_seconds()} seconds")
 
 # Headers
