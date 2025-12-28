@@ -77,8 +77,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="LuminaScan - Simple HTTP Analyzer"
     )
-    alien = pyfiglet.figlet_format("LuminaScan", font="smslant")
-    print(Fore.GREEN + alien + Style.RESET_ALL)
+
 
     parser.add_argument("url", help="Target URL")
     parser.add_argument("--cookies", action="store_true", help="Show cookies")
@@ -289,8 +288,8 @@ def main():
 
     #banner flag
     if args.banner:
-        banner = pyfiglet.figlet_format("LuminaScan", font="standard")
-        print(Fore.CYAN + banner + Style.RESET_ALL)
+        alien = pyfiglet.figlet_format("LuminaScan", font="smslant")
+        print(Fore.GREEN + alien + Style.RESET_ALL)
 
 
 # Entry point
