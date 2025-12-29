@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import requests
 import pyfiglet
 import colorama
@@ -93,6 +94,7 @@ def main():
     parser.add_argument("--timeout", default="easy", help="Set delay between requests: easy (1s), medium (3s), hard (5s)")
     parser.add_argument("--data", help="JSON payload for POST/PUT requests")
     parser.add_argument("--http-complete", action="store_true", help="Show status for all payloads")
+    parser.add_argument("--banner", action="store_true", help="Show LuminaScan Banner")
     args = parser.parse_args()
 
     # tempo
@@ -179,23 +181,27 @@ def main():
     print(f"Status: {response.status_code}")
     print(f"Response Time: {response.elapsed.total_seconds()}s\n")
 
+# Payload loop guru-friendly
     results = []
+    try:
+        payloads = payload if isinstance(payload, list) else [payload]
 
-    for i, pay in enumerate(payload, start=1):
-        try:
-            r = requests.post(url, json=pay, timeout=delay)
-            status = r.status_code
-        except requests.exceptions.Timeout:
-            status = "TIMEOUT"
-        except requests.exceptions.RequestException:
-            status = "ERROR"
-        results.append((i, status))
+        for i, pay in enumerate(payloads, start=1):
+            try:
+                r = requests.post(url, json=pay, timeout=delay)
+                status = r.status_code
+            except requests.exceptions.Timeout:
+                status = "TIMEOUT"
+            except requests.exceptions.RequestException:
+                status = "ERROR"
 
-        if args.http_complete:
-            print(f"Payload {i}: Status {status}")
+            results.append((i, status))
 
-    #method completo
-
+            if args.http_complete:
+                print(f"Payload {i}: Status {status}")
+    except KeyboardInterrupt:
+        print("\n[!] KeyboardInterrupt detected. Exiting...")
+        sys.exit(0)
 
     # Cookies
     if args.cookies:
@@ -280,6 +286,11 @@ def main():
 
     print(f"\n[~] Avg response time: {response.elapsed.total_seconds()}s")
     print("-----------------------------------")
+
+    #banner flag
+    if args.banner:
+        banner = pyfiglet.figlet_format("LuminaScan", font="standard")
+        print(Fore.CYAN + banner + Style.RESET_ALL)
 
 
 # Entry point

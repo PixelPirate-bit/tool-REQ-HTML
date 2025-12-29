@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: LuminaScan
-Version: 1.0.2
+Version: 1.0.3
 Summary: Tool to analyze website and APIs via HTTP requests
 Home-page: https://github.com/PixelPirate-bit/LuminaScan
 Author: PixelPirate-bit-2
@@ -26,3 +26,4 @@ LuminaScan
 LuminaScan is a Python tool created to analyze websites and APIs in a fast and practical way. It allows you to check headers, status codes, cookies, JSON responses, and much more, all directly from the terminal.
 
 Installation
+pip install luminascan
